@@ -123,6 +123,35 @@ CREATE OR REPLACE FUNCTION osml10n_street_abbrev_fr(longname text) RETURNS TEXT 
 $$ LANGUAGE 'plpgsql' IMMUTABLE STRICT PARALLEL SAFE COST 20;
 
 /*
+   helper function "osml10n_street_abbrev_oc"
+   replaces some common parts of Occitan street names with their abbreviation
+   Main source: https://www.canadapost.ca/tools/pg/manual/PGaddress-f.asp#1460716
+*/
+CREATE OR REPLACE FUNCTION osml10n_street_abbrev_oc(longname text) RETURNS TEXT AS $$
+ DECLARE
+  match text[];
+ BEGIN
+
+  match = regexp_matches(longname, '^(Avienguda|Baloard|Plaça|Esplanada|Carrèra|Passatge|Promenada|Paishèra|Caminada)\M');
+  IF match IS NOT NULL THEN
+    longname = CASE match[1]
+      WHEN 'Avienguda' THEN 'Av.'
+      WHEN 'Baloard' THEN 'Bd'
+      WHEN 'Plaça' THEN 'Pl.'
+      WHEN 'Esplanada' THEN 'Espl.'
+      WHEN 'Carrèra' THEN 'Carr.'
+      WHEN 'Passatge' THEN 'Pass.'
+      WHEN 'Promenada' THEN 'Prom.'
+      WHEN 'Paishèra' THEN 'Paish.'
+      WHEN 'Caminada' THEN 'Cda'
+    END || substr(longname, length(match[1]) + 1);
+  END IF;
+
+  RETURN longname;
+ END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE STRICT PARALLEL SAFE COST 20;
+
+/*
    helper function "osml10n_street_abbrev_es"
    replaces some common parts of Spanish street names with their abbreviation
    currently just a stub :(

@@ -439,3 +439,51 @@ CREATE or REPLACE FUNCTION osml10n_get_streetname_from_tags(tags hstore,
    return(osml10n_format_combined_name(names,show_brackets,separator));
  END;
 $$ LANGUAGE 'plpgsql' STABLE;
+
+/*
+
+"exported functions"
+
+*/
+CREATE or REPLACE FUNCTION osml10n_get_localized_placename(tags hstore,
+                                                           targetlang text DEFAULT 'de',
+                                                           place geometry DEFAULT NULL,
+                                                           name text DEFAULT NULL) RETURNS TEXT AS $$
+ DECLARE
+   names text[2];
+ BEGIN
+   -- workaround for openstreetmap carto database layout where name uses its own database column
+   IF (name IS NOT NULL) THEN
+     tags := tags || hstore('name',name);
+   END IF;
+   names = osml10n_get_names_from_tags(tags,false,false,targetlang,place);
+
+   IF (names[1] IS NOT NULL) THEN
+     return(names[1]);
+   ELSE 
+     return(names[2]);
+   END IF;
+ END;
+$$ LANGUAGE 'plpgsql' STABLE;
+
+
+CREATE or REPLACE FUNCTION osml10n_get_localized_streetname(tags hstore, 
+                                                           targetlang text DEFAULT 'de',
+                                                           place geometry DEFAULT NULL,
+                                                           name text DEFAULT NULL) RETURNS TEXT AS $$
+ DECLARE
+   names text[2];
+ BEGIN
+   -- workaround for openstreetmap carto database layout where name uses its own database column
+   IF (name IS NOT NULL) THEN
+     tags := tags || hstore('name',name);
+   END IF;
+   names = osml10n_get_names_from_tags(tags,false,true,targetlang,place);
+   IF (names[1] IS NOT NULL) THEN
+     return(osml10n_street_abbrev(names[1],targetlang));
+   ELSE 
+     return(names[2]);
+   END IF;
+ END;
+$$ LANGUAGE 'plpgsql' STABLE;
+
