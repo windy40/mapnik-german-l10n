@@ -3,6 +3,7 @@
 # Get extension version number from debian/changelog 
 #EXTVERSION=$(shell head -n1 debian/changelog |cut -d \( -f 2 |cut -d \) -f 1)
 #EXTVERSION_OLD=$(shell grep -e '^osml10n' debian/changelog |head -n 2 |tail -n 1 |cut -d \( -f 2 |cut -d \) -f 1)
+#windy40 could not make use of above trick
 EXTVERSION="2.5.15"
 EXTVERSION_OLD="2.5.14"
 
